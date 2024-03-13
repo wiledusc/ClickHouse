@@ -7,7 +7,7 @@ start_total=$(date +%s)
 start=$(date +%s)
 ./shellcheck-run.sh |& tee /test_output/shellcheck.txt
 runtime=$(($(date +%s)-start))
-echo "Check duplicates. Done. $runtime seconds."
+echo "Check shellcheck. Done. $runtime seconds."
 
 runtime=$(($(date +%s)-start_total))
 echo "Check style total. Done. $runtime seconds."
