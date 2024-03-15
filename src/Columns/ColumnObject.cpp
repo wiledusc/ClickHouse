@@ -334,7 +334,18 @@ void ColumnObject::Subcolumn::insert(Field field, FieldInfo info)
     if (type_changed || info.need_convert)
         field = convertFieldToTypeOrThrow(field, *least_common_type.get());
 
-    data.back()->insert(field);
+    if (!data.back()->tryInsert(field))
+    {
+        /** Normalization of the field above is pretty complicated (it uses several FieldVisitors),
+          * so in the case of a bug, we may get mismatched types.
+          * The `IColumn::insert` method does not check the type of the inserted field, and it can lead to a segmentation fault.
+          * Therefore, we use the safer `tryInsert` method to get a LOGICAL_ERROR instead of a segmentation fault.
+          */
+        throw Exception(ErrorCodes::LOGICAL_ERROR,
+            "Cannot insert field {} to column {}",
+            field.dump(), data.back()->dumpStructure());
+    }
+
     ++num_rows;
 }
 
